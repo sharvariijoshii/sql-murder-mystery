@@ -163,9 +163,16 @@ function App() {
       {/* Main game intro section (hidden when intro modal is open) */}
       {!showIntro && !mystery && !loading && !error && (
         <div className="game-intro">
-          <h1>SQL Murder Mystery</h1>
+          <div className="intro-art-row">
+            <span className="intro-art magnifier" title="Detective's Magnifier">🔍</span>
+            <span className="intro-art blood" title="Blood Spatter">
+              <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#b91c1c" opacity="0.8"/><ellipse cx="24" cy="10" rx="3" ry="1.1" fill="#b91c1c" opacity="0.7"/><ellipse cx="8" cy="24" rx="2" ry="0.7" fill="#b91c1c" opacity="0.6"/><ellipse cx="20" cy="27" rx="1.5" ry="0.5" fill="#b91c1c" opacity="0.4"/></svg>
+            </span>
+            <span className="intro-art sqlcode" title="SQL Query Example">SELECT *<br/>FROM suspects<br/>WHERE guilty = 1;</span>
+          </div>
+          <h1>Database Detective</h1>
           <p>
-            Welcome to <b>SQL Murder Mystery</b>!<br /><br />
+            Welcome to <b>Database Detective</b>!<br /><br />
             Use your SQL detective skills to solve unique, murder mysteries. Each mystery features new suspects, clues, and challenges—no two games are ever the same!<br /><br />
             <b>How to play:</b>
             <ul>
@@ -186,7 +193,7 @@ function App() {
       {!showIntro && !loading && !showCaseClosed && mystery && (
         <>
           <header className="game-header">
-            <h1>SQL Murder Mystery</h1>
+            <h1>Database Detective</h1>
             <p className="story-intro">{mystery.intro}</p>
           </header>
           <main className="game-content">

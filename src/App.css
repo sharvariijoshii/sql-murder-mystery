@@ -357,6 +357,47 @@ body {
   border-radius: 10px;
 }
 
+.intro-art-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.intro-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-art.magnifier {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 2px 2px #0008);
+}
+
+.intro-art.blood svg {
+  display: block;
+  width: 2.3rem;
+  height: 2.3rem;
+  margin-bottom: 0.1rem;
+  filter: drop-shadow(0 1px 2px #0006);
+}
+
+.intro-art.sqlcode {
+  font-family: 'Fira Mono', 'Menlo', 'monospace';
+  font-size: 0.93rem;
+  background: #23232b;
+  color: #22d3ee;
+  border-radius: 5px;
+  border: 1.5px solid #22d3ee;
+  padding: 0.35rem 0.7rem;
+  box-shadow: 0 1px 6px #0007;
+  white-space: pre-line;
+  line-height: 1.3;
+  margin-left: 0.2rem;
+}
+
 /* Prevent buttons from overflowing or being cut off */
 @media (max-height: 700px) {
   .sql-terminal {

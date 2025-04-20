@@ -4,10 +4,10 @@ import './IntroModal.css';
 const IntroModal = ({ onStart }) => (
   <div className="intro-modal-overlay">
     <div className="intro-modal">
-      <h2>SQL Murder Mystery</h2>
+      <h2>Database Detective</h2>
       <p className="intro-narration">
         <span className="intro-highlight">Welcome, Detective!</span><br /><br />
-        <b>SQL Murder Mystery</b> is an interactive, replayable game that teaches SQL through storytelling and puzzles.<br /><br />
+        <b>Database Detective</b> is an interactive, replayable game that teaches SQL through storytelling and puzzles.<br /><br />
         <b>Your Mission:</b> Solve a brand new murder case each time you play!<br /><br />
         <ul>
           <li>Investigate suspects and clues</li>
