@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import initSqlJs from 'sql.js';
 import SQLTerminal from './components/SQLTerminal';
 import ClueBoard from './components/ClueBoard';
-import Introduction from './components/Introduction';
+import IntroModal from './components/IntroModal';
+import CaseClosedModal from './components/CaseClosedModal';
 import './App.css';
 
 function App() {
@@ -62,6 +63,7 @@ function App() {
 
   const [connections, setConnections] = useState([]);
   const [showIntro, setShowIntro] = useState(true);
+  const [showCaseClosed, setShowCaseClosed] = useState(false);
 
   useEffect(() => {
     // Initialize SQL.js and create the database
@@ -138,7 +140,7 @@ function App() {
           setCurrentChallengeIndex(currentChallengeIndex + 1);
           alert("Excellent work, Detective! New evidence uncovered!");
         } else {
-          alert("Congratulations! You've solved the case!");
+          setShowCaseClosed(true);
         }
       } else {
         // Show the query result even if it's not the exact answer
@@ -158,6 +160,10 @@ function App() {
     }
   };
 
+  const handleRestart = () => {
+    window.location.reload();
+  };
+
   const getClueDescription = (index) => {
     const clueDescriptions = [
       'Security footage shows three suspicious figures',
@@ -170,14 +176,14 @@ function App() {
   };
 
   return (
-    <>
-      {showIntro ? (
-        <Introduction onStart={() => setShowIntro(false)} />
-      ) : (
-        <div className="game-container">
+    <div className="game-container">
+      {showIntro && <IntroModal onStart={() => setShowIntro(false)} />}
+      {showCaseClosed && <CaseClosedModal onRestart={handleRestart} />}
+      {!showIntro && !showCaseClosed && (
+        <>
           <header className="game-header">
-            <h1>The Database Detective</h1>
-            <p>Crack the case using your SQL skills!</p>
+            <h1>SQL Murder Mystery</h1>
+            <p>Help solve the case using your SQL skills!</p>
           </header>
           <main className="game-content">
             <SQLTerminal 
@@ -189,9 +195,9 @@ function App() {
               connections={connections}
             />
           </main>
-        </div>
+        </>
       )}
-    </>
+    </div>
   );
 }
 
