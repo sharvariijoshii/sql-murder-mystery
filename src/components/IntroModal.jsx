@@ -6,14 +6,16 @@ const IntroModal = ({ onStart }) => (
     <div className="intro-modal">
       <h2>SQL Murder Mystery</h2>
       <p className="intro-narration">
-        <span className="intro-highlight">A chilling midnight rain falls over Central City.</span><br /><br />
-        The peace is shattered by a single, urgent call: <b>A murder has been committed in Central Park.</b><br /><br />
-        The city’s top detective—you—arrive at the scene. The only clues? Flickering security cameras, cryptic alibi logs, and a tangled web of suspects, each with secrets to hide.<br /><br />
-        The Chief leans in:<br />
-        <span className="intro-quote">“We need answers. Fast. The killer is still out there—and every second counts.”</span><br /><br />
-        <b>Your mission:</b> Use your SQL skills to sift through digital evidence, connect the dots, and unmask the culprit before they strike again.<br /><br />
-        <span className="intro-highlight">Every correct query reveals a new clue. Every mistake? The trail grows colder.</span><br /><br />
-        Are you ready to crack the case and become a legend in the annals of Central City’s finest?
+        <span className="intro-highlight">Welcome, Detective!</span><br /><br />
+        <b>SQL Murder Mystery</b> is an interactive, replayable game that teaches SQL through storytelling and puzzles.<br /><br />
+        <b>Your Mission:</b> Solve a brand new murder case each time you play!<br /><br />
+        <ul>
+          <li>Investigate suspects and clues</li>
+          <li>Write SQL queries to uncover evidence</li>
+          <li>Piece together the facts to catch the culprit</li>
+        </ul>
+        <span className="intro-highlight">Every game is unique. Every query counts.</span><br /><br />
+        Are you ready to crack your first case and become a legend among Central City's finest?
       </p>
       <button className="intro-btn" onClick={onStart}>Begin Investigation</button>
     </div>

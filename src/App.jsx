@@ -4,66 +4,50 @@ import SQLTerminal from './components/SQLTerminal';
 import ClueBoard from './components/ClueBoard';
 import IntroModal from './components/IntroModal';
 import CaseClosedModal from './components/CaseClosedModal';
+import Notification from './components/Notification';
+import { fetchGeminiMystery } from './utils/gemini';
 import './App.css';
 
 function App() {
-  const challenges = [
-    {
-      id: 1,
-      prompt: "A murder has occurred at Central Park. First, let's find all security cameras in the area.\n\nComplete the query to find all security cameras where location contains 'park':\n\nSELECT * FROM security_cameras WHERE location ____ '%park%'\n\nExpected output: A list of all cameras with their IDs and locations containing the word 'park'",
-      answer: "SELECT * FROM security_cameras WHERE location LIKE '%park%'",
-      hint: "The LIKE operator is used with % wildcards. Fill in: LIKE",
-      concept: "LIKE operator, Pattern Matching",
-      template: "SELECT * FROM security_cameras WHERE location ____ '%park%'"
-    },
-    {
-      id: 2,
-      prompt: "The murder occurred between 10 PM and midnight. Find all people caught on camera during this time.\n\nComplete the query to find people recorded between 22:00 and 23:59:\n\nSELECT name, time FROM camera_logs WHERE time _____ '22:00' ____ '23:59'\n\nExpected output: Names and timestamps of people recorded between 10 PM and midnight",
-      answer: "SELECT name, time FROM camera_logs WHERE time BETWEEN '22:00' AND '23:59'",
-      hint: "Use BETWEEN ... AND ... for time ranges",
-      concept: "BETWEEN operator, Time filtering",
-      template: "SELECT name, time FROM camera_logs WHERE time _____ '22:00' ____ '23:59'"
-    },
-    {
-      id: 3,
-      prompt: "We need to cross-reference suspects with their alibis.\n\nComplete the query to join suspects and alibis tables using suspect_id:\n\nSELECT s.name, a.location \nFROM suspects s \n____ alibis a \nON s.suspect_id = a.suspect_id\n\nExpected output: Suspect names and their claimed locations during the crime",
-      answer: "SELECT s.name, a.location \nFROM suspects s \nJOIN alibis a \nON s.suspect_id = a.suspect_id",
-      hint: "Use JOIN to connect the tables",
-      concept: "JOIN operations, Table aliases",
-      template: "SELECT s.name, a.location \nFROM suspects s \n____ alibis a \nON s.suspect_id = a.suspect_id"
-    },
-    {
-      id: 4,
-      prompt: "Let's find how many suspects were in each location.\n\nComplete the query to count suspects per location:\n\nSELECT location, ____(*) as suspect_count \nFROM alibis \n____ BY location\n\nExpected output: Each location and the number of suspects who claim to be there",
-      answer: "SELECT location, COUNT(*) as suspect_count FROM alibis GROUP BY location",
-      hint: "Use COUNT(*) and GROUP BY",
-      concept: "GROUP BY, Aggregation",
-      template: "SELECT location, ____(*) as suspect_count \nFROM alibis \n____ BY location"
-    },
-    {
-      id: 5,
-      prompt: "Find suspicious locations with more than 3 suspects.\n\nComplete the query to find locations with over 3 suspects:\n\nSELECT location, COUNT(*) as suspect_count \nFROM alibis \nGROUP BY location \n_____ suspect_count > 3\n\nExpected output: Locations where more than 3 suspects claim to be - these are highly suspicious!",
-      answer: "SELECT location, COUNT(*) as suspect_count FROM alibis GROUP BY location HAVING suspect_count > 3",
-      hint: "Use HAVING to filter grouped results",
-      concept: "HAVING clause, Filtering groups",
-      template: "SELECT location, COUNT(*) as suspect_count \nFROM alibis \nGROUP BY location \n_____ suspect_count > 3"
-    }
-  ];
-
-  const [db, setDb] = useState(null);
-  const [dbError, setDbError] = useState(null);
-  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
-  const [clues, setClues] = useState([
-    {
-      id: 1,
-      image: '/clues/park-map.png',
-      description: 'Crime Scene: Central Park - 11:30 PM'
-    }
-  ]);
-
-  const [connections, setConnections] = useState([]);
   const [showIntro, setShowIntro] = useState(true);
   const [showCaseClosed, setShowCaseClosed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Dynamic game state
+  const [mystery, setMystery] = useState(null); // { intro, suspects, challenges, conclusion }
+  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
+  const [clues, setClues] = useState([]);
+  const [connections, setConnections] = useState([]);
+  const [db, setDb] = useState(null);
+  const [dbError, setDbError] = useState(null);
+  const [notification, setNotification] = useState(null);
+
+  // Fetch new mystery from Gemini
+  const loadNewMystery = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const newMystery = await fetchGeminiMystery();
+      setMystery(newMystery);
+      // Reset clues and challenge index
+      setClues([]);
+      setConnections([]);
+      setCurrentChallengeIndex(0);
+      setShowCaseClosed(false);
+      // Optionally, you can also dynamically generate a DB schema here
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!showIntro) {
+      loadNewMystery();
+    }
+  }, [showIntro]);
 
   useEffect(() => {
     // Initialize SQL.js and create the database
@@ -94,106 +78,125 @@ function App() {
   const normalizeQuery = (query) => {
     return query
       .toLowerCase()
-      .replace(/\s+/g, ' ')
-      .replace(/\s*([,()=])\s*/g, '$1')
+      .replace(/["']/g, '') // remove all quotes
+      .replace(/\s+/g, ' ') // collapse whitespace
+      .replace(/;$/, '')     // remove trailing semicolon
+      .replace(/\s*([,()=<>])\s*/g, '$1') // remove spaces around punctuation
       .trim();
   };
 
   const handleQuerySubmit = (query) => {
-    if (!db) {
-      alert('Database is not ready yet. Please wait...');
-      return;
-    }
-
-    try {
-      // Execute the query
-      const result = db.exec(query);
-      
-      // Normalize both queries for comparison
-      const normalizedInput = normalizeQuery(query);
-      const normalizedAnswer = normalizeQuery(challenges[currentChallengeIndex].answer);
-      
-      // Check if the query matches the current challenge
-      if (normalizedInput === normalizedAnswer) {
-        // Add new clue based on the challenge completed
-        const newClue = {
-          id: clues.length + 1,
-          image: `/clues/clue-${currentChallengeIndex + 1}.png`,
-          description: getClueDescription(currentChallengeIndex)
-        };
-        
-        setClues([...clues, newClue]);
-        
-        // Add connection between last clue and new clue if there are at least 2 clues
-        if (clues.length > 0) {
-          setConnections([
-            ...connections,
-            {
-              start: { x: 100, y: 100 * clues.length },
-              end: { x: 200, y: 100 * (clues.length + 1) }
-            }
-          ]);
-        }
-
-        // Move to next challenge if not at the end
-        if (currentChallengeIndex < challenges.length - 1) {
-          setCurrentChallengeIndex(currentChallengeIndex + 1);
-          alert("Excellent work, Detective! New evidence uncovered!");
-        } else {
-          setShowCaseClosed(true);
-        }
-      } else {
-        // Show the query result even if it's not the exact answer
-        const columns = result[0]?.columns;
-        const values = result[0]?.values;
-        if (columns && values) {
-          alert("Query result:\n\n" + 
-                columns.join(", ") + "\n" +
-                values.map(row => row.join(", ")).join("\n") +
-                "\n\nYour query works but doesn't exactly match what we're looking for. Try to match the template exactly!");
-        } else {
-          alert("Query executed but returned no results. Try again!");
-        }
+    if (!mystery) return;
+    const challenges = mystery.challenges;
+    const normalizedInput = normalizeQuery(query);
+    const normalizedAnswer = normalizeQuery(challenges[currentChallengeIndex].answer);
+    if (normalizedInput === normalizedAnswer) {
+      // Add new clue
+      setClues([...clues, { description: challenges[currentChallengeIndex].prompt, id: clues.length + 1 }]);
+      if (clues.length > 0) {
+        setConnections([
+          ...connections,
+          {
+            start: { x: 100, y: 100 * clues.length },
+            end: { x: 200, y: 100 * (clues.length + 1) }
+          }
+        ]);
       }
-    } catch (error) {
-      alert("Error in your query: " + error.message);
+      // Next challenge or finish
+      if (currentChallengeIndex < challenges.length - 1) {
+        setCurrentChallengeIndex(currentChallengeIndex + 1);
+        setNotification({ message: 'Excellent work, Detective! New evidence uncovered!', type: 'success' });
+      } else {
+        setShowCaseClosed(true);
+      }
+    } else {
+      // Show the expected answer in the error message
+      setNotification({ message: 'Not quite! Check your SQL and try to match the template.\nExpected answer: ' + challenges[currentChallengeIndex].answer, type: 'error', duration: 4000 });
     }
   };
 
-  const handleRestart = () => {
-    window.location.reload();
+  // Show a notification for hint
+  const handleHint = (hint) => {
+    setNotification({ message: hint, type: 'success', duration: 3500 });
   };
 
-  const getClueDescription = (index) => {
-    const clueDescriptions = [
-      'Security footage shows three suspicious figures',
-      'Time logs reveal unusual activity pattern',
-      'Suspect alibis show conflicting statements',
-      'Multiple suspects gathered at warehouse',
-      'Key evidence points to the mastermind'
-    ];
-    return clueDescriptions[index];
+  // Handler to start a new case
+  const handleRestart = async () => {
+    setShowCaseClosed(false);
+    setMystery(null);
+    setClues([]);
+    setConnections([]);
+    setCurrentChallengeIndex(0);
+    setError(null);
+    setLoading(true);
+    try {
+      const newMystery = await fetchGeminiMystery();
+      setMystery(newMystery);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handler to go back to the main intro page
+  const handleGoHome = () => {
+    setShowCaseClosed(false);
+    setMystery(null);
+    setClues([]);
+    setConnections([]);
+    setCurrentChallengeIndex(0);
+    setError(null);
+    setShowIntro(true);
   };
 
   return (
     <div className="game-container">
-      {showIntro && <IntroModal onStart={() => setShowIntro(false)} />}
-      {showCaseClosed && <CaseClosedModal onRestart={handleRestart} />}
-      {!showIntro && !showCaseClosed && (
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          duration={notification.duration || 2500}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      {/* Main game intro section (hidden when intro modal is open) */}
+      {!showIntro && !mystery && !loading && !error && (
+        <div className="game-intro">
+          <h1>SQL Murder Mystery</h1>
+          <p>
+            Welcome to <b>SQL Murder Mystery</b>!<br /><br />
+            Use your SQL detective skills to solve unique, murder mysteries. Each mystery features new suspects, clues, and challenges—no two games are ever the same!<br /><br />
+            <b>How to play:</b>
+            <ul>
+              <li>Read the story intro and review the suspects.</li>
+              <li>Use SQL queries to uncover clues and evidence.</li>
+              <li>Piece together the facts and catch the culprit!</li>
+            </ul>
+            <b>Ready to begin?</b> Click <i>Start New Case</i> to get your first AI-powered mystery!
+          </p>
+          <button className="case-closed-btn" onClick={handleRestart}>Start New Case</button>
+        </div>
+      )}
+      {/* Only show the modal when showIntro is true */}
+      {showIntro && <IntroModal onStart={() => setShowIntro(false)} narration={mystery?.intro} />}
+      {loading && <div className="loading-modal">Generating a new mystery...</div>}
+      {error && <div className="error-modal">{error}</div>}
+      {showCaseClosed && <CaseClosedModal onRestart={handleRestart} onGoHome={handleGoHome} conclusion={mystery?.conclusion} />}
+      {!showIntro && !loading && !showCaseClosed && mystery && (
         <>
           <header className="game-header">
             <h1>SQL Murder Mystery</h1>
-            <p>Help solve the case using your SQL skills!</p>
+            <p className="story-intro">{mystery.intro}</p>
           </header>
           <main className="game-content">
-            <SQLTerminal 
+            <SQLTerminal
               onQuerySubmit={handleQuerySubmit}
-              currentChallenge={challenges[currentChallengeIndex]}
+              currentChallenge={mystery.challenges[currentChallengeIndex]}
+              onGoHome={handleGoHome}
+              onHint={handleHint}
             />
-            <ClueBoard 
-              clues={clues}
-              connections={connections}
-            />
+            <ClueBoard clues={clues} connections={connections} suspects={mystery.suspects} />
           </main>
         </>
       )}

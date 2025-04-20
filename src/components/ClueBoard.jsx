@@ -8,9 +8,15 @@ const ClueBoard = ({ clues, connections }) => {
       </div>
       <div className="clues-container">
         {clues.map((clue, index) => (
-          <div key={index} className="clue-card">
-            <img src={clue.image} alt={clue.description} />
-            <p>{clue.description}</p>
+          <div key={index} className="clue-card fancy">
+            <div className="clue-art">
+              {clue.image ? (
+                <img src={clue.image} alt={clue.description} />
+              ) : (
+                <span role="img" aria-label="evidence" className="clue-icon">🔎</span>
+              )}
+            </div>
+            <div className="clue-desc">{clue.description}</div>
           </div>
         ))}
         <svg className="connections-overlay">

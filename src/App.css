@@ -15,6 +15,14 @@ html, body, #root, .game-container {
   overflow: hidden;
 }
 
+body, html, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: #17171c;
+}
+
 body {
   background-color: var(--primary-color);
   color: var(--text-color);
@@ -28,13 +36,16 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  position: relative;
+  background: #17171c;
 }
 
 .game-header {
   text-align: center;
   margin-bottom: 0.5rem;
+  flex-shrink: 0;
   text-shadow: 2px 2px var(--accent-color);
-  flex: 0 0 auto;
 }
 
 .game-header h1 {
@@ -47,8 +58,8 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   flex: 1 1 auto;
-  height: 0;
   min-height: 0;
+  height: 1px;
   overflow: hidden;
 }
 
@@ -66,10 +77,16 @@ body {
   border: 2px solid var(--accent-color);
   border-radius: 4px;
   padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .terminal-header {
   margin-bottom: 0.6rem;
+  flex-shrink: 0;
 }
 
 .terminal-header h3 {
@@ -99,36 +116,12 @@ body {
   opacity: 0.8;
 }
 
-.terminal-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 0.7rem;
-}
-
-.hint-btn {
-  background-color: var(--secondary-color);
-  color: var(--text-color);
-  border: 1px solid var(--accent-color);
-  padding: 0.4rem 0.9rem;
-  cursor: pointer;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.75rem;
-  transition: all 0.2s;
-}
-
-.hint-btn:hover {
-  background-color: var(--accent-color);
-  transform: scale(1.05);
-}
-
 .code-editor {
-  flex-grow: 1;
-  margin-bottom: 0.7rem;
-  border: 1px solid var(--secondary-color);
-  font-family: monospace;
-  font-size: 1rem;
+  flex: 1 1 0;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
 }
 
 .code-editor .cm-editor {
@@ -146,50 +139,37 @@ body {
   color: rgba(255, 255, 255, 0.3);
 }
 
-.clue-board {
-  background-color: var(--secondary-color);
-  border: 2px solid var(--accent-color);
-  border-radius: 4px;
-  padding: 0.7rem;
-  position: relative;
-  overflow: auto;
-}
-
-.clues-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.7rem;
-  padding: 0.7rem;
-  height: calc(100% - 40px);
-  overflow-y: auto;
-}
-
-.clue-card {
-  background-color: var(--primary-color);
-  border: 1px solid var(--accent-color);
-  padding: 0.3rem;
-  text-align: center;
-  position: relative;
-}
-
-.clue-card img {
-  width: 100%;
-  height: auto;
-  image-rendering: pixelated;
-}
-
-.connections-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+.code-editor-inner {
+  flex: 1 1 0;
+  min-height: 0;
   height: 100%;
-  pointer-events: none;
 }
 
-.connection-line {
-  stroke: var(--accent-color);
-  stroke-width: 2;
+.terminal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.7rem;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.hint-btn {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  border: 1px solid var(--accent-color);
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.hint-btn:hover {
+  background-color: var(--accent-color);
+  transform: scale(1.05);
 }
 
 .submit-btn {
@@ -202,8 +182,190 @@ body {
   text-transform: uppercase;
   transition: transform 0.1s;
   font-size: 0.75rem;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .submit-btn:hover {
   transform: scale(1.05);
+}
+
+.case-closed-btn.secondary {
+  font-size: 0.85rem;
+  padding: 0.5rem 0.7rem;
+  width: auto;
+  min-width: 120px;
+  border-radius: 7px;
+  margin-left: 1rem;
+}
+
+.terminal-footer .case-closed-btn.secondary {
+  font-size: 0.85rem;
+  padding: 0.45rem 0.7rem;
+  width: auto;
+  min-width: 100px;
+  border-radius: 7px;
+  margin-left: 1rem;
+}
+
+.clue-board {
+  background-color: var(--secondary-color);
+  border: 2px solid var(--accent-color);
+  border-radius: 4px;
+  padding: 0.7rem;
+  position: relative;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.clues-container {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 0.5rem 0;
+}
+
+.clue-card.fancy {
+  background: linear-gradient(135deg, #23232b 60%, #3b2b40 100%);
+  border: 2px solid #f43f5e;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px 0 #0006, 0 0 0 3px #f43f5e44;
+  min-width: 140px;
+  max-width: 200px;
+  min-height: 120px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: transform 0.12s, box-shadow 0.12s;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.clue-card.fancy:hover {
+  transform: scale(1.04) rotate(-2deg);
+  box-shadow: 0 4px 20px 0 #0008, 0 0 0 4px #f43f5e88;
+  z-index: 2;
+}
+
+.clue-art {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #18181f;
+  border-radius: 50%;
+  border: 1.5px solid #f43f5e;
+  box-shadow: 0 0 0 2px #f43f5e22;
+}
+
+.clue-art img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.clue-icon {
+  font-size: 2rem;
+  color: #f43f5e;
+  filter: drop-shadow(0 0 2px #fff5);
+}
+
+.clue-desc {
+  margin-top: 0.3rem;
+  font-size: 1rem;
+  color: #fff;
+  text-align: center;
+  text-shadow: 1px 1px 0 #000a;
+  font-family: 'Press Start 2P', monospace;
+  letter-spacing: 0.01em;
+  word-break: break-word;
+}
+
+.game-intro {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #23232b 60%, #3b2b40 100%);
+  border: 3px solid #f43f5e;
+  border-radius: 18px;
+  box-shadow: 0 8px 40px 0 #000b, 0 0 0 5px #f43f5e33;
+  max-width: 440px;
+  min-width: 320px;
+  width: 100%;
+  min-height: unset;
+  max-height: 90vh;
+  padding: 2.2rem 2rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  text-align: center;
+  animation: popin 0.7s cubic-bezier(.17,.67,.83,.67);
+  overflow-y: auto;
+  margin: 0 auto;
+}
+
+@media (min-width: 600px) {
+  .game-intro {
+    width: 420px;
+    min-width: 320px;
+    max-width: 480px;
+  }
+}
+
+.game-intro h1 {
+  font-size: 2.2rem;
+  color: #f43f5e;
+  margin-bottom: 1.2rem;
+  text-shadow: 2px 2px 0 #000d;
+}
+
+.game-intro p, .game-intro ul {
+  color: #fff;
+  font-size: 1.09rem;
+  font-family: 'Press Start 2P', monospace;
+  margin-bottom: 1.1rem;
+  text-shadow: 1px 1px 0 #000a;
+}
+
+.game-intro ul {
+  list-style: disc inside;
+  margin: 0.8rem 0 0.8rem 0;
+  padding: 0 0 0 1.1rem;
+  text-align: left;
+}
+
+.game-intro button.case-closed-btn {
+  margin-top: 1.2rem;
+  width: 80%;
+  font-size: 1.1rem;
+  padding: 0.7rem 0;
+  border-radius: 10px;
+}
+
+/* Prevent buttons from overflowing or being cut off */
+@media (max-height: 700px) {
+  .sql-terminal {
+    min-height: 350px;
+  }
+  .code-editor {
+    min-height: 120px;
+  }
+  .terminal-footer {
+    min-height: 54px;
+  }
 }
